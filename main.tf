@@ -43,3 +43,47 @@ resource "aws_subnet" "privatesubnet1" { # Creating Private Subnets
     Name = "private-subnet-1"
   }
 }
+
+resource "aws_eip" "nateIP" {
+  vpc = true
+}
+
+resource "aws_nat_gateway" "NATgw" {
+  allocation_id = aws_eip.nateIP.id
+  subnet_id     = aws_subnet.publicsubnet1.id
+  tags = {
+    Name = "nat-gw-1"
+  }
+}
+
+resource "aws_route_table" "PublicRT" { # Creating RT for Public Subnet
+  vpc_id = aws_vpc.main-vpc.id
+  route {
+    cidr_block = "0.0.0.0/0" # Traffic from Public Subnet reaches Internet via Internet Gateway
+    gateway_id = aws_internet_gateway.igw-1.id
+  }
+  tags = {
+    Name = "public-route-table"
+  }
+}
+
+resource "aws_route_table" "PrivateRT" { # Creating RT for Private Subnet
+  vpc_id = aws_vpc.Main.id
+  route {
+    cidr_block     = "0.0.0.0/0" # Traffic from Private Subnet reaches Internet via NAT Gateway
+    nat_gateway_id = aws_nat_gateway.NATgw.id
+  }
+  tags = {
+    Name = "private-route-table-1"
+  }
+}
+
+resource "aws_route_table_association" "PublicRTassociation1" {
+  subnet_id      = aws_subnet.publicsubnet1.id
+  route_table_id = aws_route_table.PublicRT.id
+}
+
+resource "aws_route_table_association" "PrivateRTassociation1" {
+  subnet_id      = aws_subnet.privatesubnet1.id
+  route_table_id = aws_route_table.PrivateRT.id
+}
