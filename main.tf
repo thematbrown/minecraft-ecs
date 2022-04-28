@@ -37,7 +37,7 @@ resource "aws_subnet" "publicsubnet1" { # Creating Public Subnets
 
 resource "aws_subnet" "privatesubnet1" { # Creating Private Subnets
   vpc_id            = aws_vpc.main-vpc.id
-  cidr_block        = "10.0.3.0/" # CIDR block of private subnets
+  cidr_block        = "10.0.3.0/24" # CIDR block of private subnets
   availability_zone = "us-east-1a"
   tags = {
     Name = "private-subnet-1"
@@ -115,7 +115,7 @@ resource "aws_security_group" "serverSG" {
 
 resource "aws_network_interface" "test" {
   subnet_id   = aws_subnet.privatesubnet1.id
-  private_ips = ["10.0.5.0/24"]
+  private_ips = ["10.0.3.32"]
 
   tags = {
     Name = "primary_network_interface"
